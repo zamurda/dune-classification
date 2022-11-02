@@ -61,6 +61,8 @@ class Events:
         self.true_neutrino_vtx_u = tree['trueNuVtxU'].array(library="np")
         self.true_neutrino_vtx_v = tree['trueNuVtxV'].array(library="np")
         self.true_neutrino_vtx_w = tree['trueNuVtxW'].array(library="np")
+        #custom
+        self.is_shower = self.is_shower_setter()
         file.close()
         self.make_sequential()
 
@@ -101,8 +103,13 @@ class Events:
                 seq_event += 1
             seq_events[i] = seq_event
         self.event_number = seq_events
-
-
+        
+    def is_shower_setter(self) -> bool:
+        return self.mc_pdg == [11,22]
+        
+        
+        
+            
 from awkward import Array
 
 class View:
