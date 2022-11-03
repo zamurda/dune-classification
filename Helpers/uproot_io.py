@@ -106,7 +106,7 @@ class Events:
         
     def is_shower_setter(self) -> bool:
         is_shower = np.like_zeros(self.mc_pdg)
-        is_shower[np.where(self.mc_pdg == [11,22])] = 1
+        is_shower[np.where((self.mc_pdg == 11) | (self.mc_pdg == -11) | (self.mc_pdg == 22))] = 1
         return is_shower
         
         
