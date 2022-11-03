@@ -105,7 +105,9 @@ class Events:
         self.event_number = seq_events
         
     def is_shower_setter(self) -> bool:
-        return self.mc_pdg == [11,22]
+        is_shower = np.like_zeros(self.mc_pdg)
+        is_shower[np.where(self.mc_pdg == [11,22])] = 1
+        return is_shower
         
         
 ##########################################################################################################   
