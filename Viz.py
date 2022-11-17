@@ -12,16 +12,6 @@ def reco_display(event_obj, event_num, wire_plane:str):
         }
             
         if wire_plane in list(reco_planes):
-            '''
-            arr1 = np.hstack(event_obj.filter_by_event(reco_planes[wire_plane][0], event_num))
-            arr2 = np.hstack(event_obj.filter_by_event(reco_planes[wire_plane][1], event_num))
-            acds = np.hstack(event_obj.filter_by_event(reco_planes[wire_plane][2], event_num))
-            
-
-            plt.scatter(arr1, arr2,s=8,c=acds,cmap='hot')
-            plt.colorbar()
-            plt.show()
-            '''
             arr1 = event_obj.filter_by_event(reco_planes[wire_plane][0], event_num)
             arr2 = event_obj.filter_by_event(reco_planes[wire_plane][1], event_num)
             acds = event_obj.filter_by_event(reco_planes[wire_plane][2], event_num)
@@ -38,6 +28,36 @@ def reco_display(event_obj, event_num, wire_plane:str):
     else:
         raise TypeError("Function expects uproot_io Events object type")
 
-
-    def mc_display():
-        pass
+    
+def norm_hist(vals, n, vline=None):
+    if len(np.shape(vals)) > 1:
+        for val in vals:
+            plt.hist(val, density=True, bins=n, histtype="step")
+    else:
+        plt.hist(vals, density=True, bins=n, histtype="step")
+    if vline is not None:
+        plt.axvline(vline, ls="dotted", c="g")
+    plt.show()
+    
+def particle_view(event_obj: Events, particle_id: int, x_axis: str, y_axis: str) -> None:
+    xvals = getattr(event_obj, x_axis)[particle_id]
+    yvals = getattr(event_obj, y_axis)[particle_id]
+    #xmag = int(np.log10(xvals[0]))
+    #ymag = int(np.log10(yvals[0]))
+    
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12,8))
+    fig.suptitle(f"{y_axis} against {x_axis} for particle {particle_id}")
+    
+    ax1.set(xlabel= x_axis, ylabel= y_axis)
+    ax1.set_label("Zoomed-in View")
+    ax1.scatter(xvals, yvals)
+    
+    #ax2.set(xlabel= x_axis, ylabel= y_axis)
+    #ax2.set_label("Normed Axis View")
+    #ax2.set_xlim([0, 10**(xmag+1)])
+    #ax2.set_ylim([0, 10**(ymag+1)])
+    #ax2.scatter(xvals, yvals)
+    
+    fig.show()
+    
+    
