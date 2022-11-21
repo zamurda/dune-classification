@@ -15,6 +15,9 @@ def quality_cut(event_obj: Events, event_num = False, var_names: tuple = ("purit
     #check if all variable names are valid and each variable has a valid requirement
     if all(var in dir(event_obj) for var in var_names) and len(var_names) == len(reqs):
         indices = np.array([])
+        #first add indices where hit arrays are empty
+        empty_mask = [np.any(i) for i in event_obj.reco_hits_x_w]
+        indices = np.append(indices, [[i for i,val in enumerate(empty_mask) if not val]])
         if not event_num:
             #get indices where requirements are not met and pick out the unique indices
             for idx, attr in enumerate(var_names):
