@@ -62,7 +62,7 @@ class Events:
         self.true_neutrino_vtx_v = tree['trueNuVtxV'].array(library="np")
         self.true_neutrino_vtx_w = tree['trueNuVtxW'].array(library="np")
         #custom
-        self.is_shower = self.is_shower_setter()
+        self.is_track = self.is_track_setter()
         file.close()
         self.make_sequential()
 
@@ -104,10 +104,10 @@ class Events:
             seq_events[i] = seq_event
         self.event_number = seq_events
         
-    def is_shower_setter(self) -> bool:
-        is_shower = np.zeros_like(self.mc_pdg)
-        is_shower[np.where((self.mc_pdg == 11) | (self.mc_pdg == -11) | (self.mc_pdg == 22))] = 1
-        return is_shower
+    def is_track_setter(self) -> bool:
+        is_track = np.zeros_like(self.mc_pdg)
+        is_track[np.where((self.mc_pdg == 11) | (self.mc_pdg == -11) | (self.mc_pdg == 22))] = 0
+        return is_track
         
         
 ##########################################################################################################   
