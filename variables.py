@@ -7,17 +7,17 @@ def particle_data(event_obj,num_particle,direction):
     hits_x_direction = np.array([])
     hits_x = np.array([])
 
-    if direction == "u":
+    if direction.lower() == "u":
         for i in range(event_obj.reco_num_hits_u[num_particle]):
             hits_x = np.append(hits_x, event_obj.reco_hits_u[num_particle][i])
             hits_x_direction = np.append(hits_x_direction, event_obj.reco_hits_x_u[num_particle][i])
        
-    if direction == 'v':
+    if direction.lower() == 'v':
         for i in range(event_obj.reco_num_hits_v[num_particle]):
             hits_x = np.append(hits_x, event_obj.reco_hits_v[num_particle][i])
             hits_x_direction = np.append(hits_x_direction, event_obj.reco_hits_x_v[num_particle][i])
         
-    if direction == "w":
+    if direction.lower() == "w":
         for i in range(event_obj.reco_num_hits_w[num_particle]):
             hits_x = np.append(hits_x, event_obj.reco_hits_w[num_particle][i])
             hits_x_direction = np.append(hits_x_direction, event_obj.reco_hits_x_w[num_particle][i])
@@ -35,19 +35,19 @@ def particle_length(event_obj,num_particle,direction):
 def particle_sinuousity(event_obj,num_particle,direction):
     path_length = 0
 
-    if direction == "u":
+    if direction.lower() == "u":
         for i in range(event_obj.reco_num_hits_u[num_particle]):
             dx = event_obj.reco_hits_u[num_particle][i] - event_obj.reco_hits_u[num_particle][i-1]
             dy = event_obj.reco_hits_x_u[num_particle][i] - event_obj.reco_hits_x_u[num_particle][i-1]
             path_length += (dx**2+dy**2)**0.5
        
-    if direction == 'v':
+    if direction.lower() == 'v':
         for i in range(event_obj.reco_num_hits_v[num_particle]):
             dx = event_obj.reco_hits_v[num_particle][i] - event_obj.reco_hits_v[num_particle][i-1]
             dy = event_obj.reco_hits_x_v[num_particle][i] - event_obj.reco_hits_x_v[num_particle][i-1]
             path_length += (dx**2+dy**2)**0.5
     
-    if direction == "w":
+    if direction.lower() == "w":
         for i in range(event_obj.reco_num_hits_w[num_particle]):
             dx = event_obj.reco_hits_w[num_particle][i] - event_obj.reco_hits_w[num_particle][i-1]
             dy = event_obj.reco_hits_x_w[num_particle][i] - event_obj.reco_hits_x_w[num_particle][i-1]
