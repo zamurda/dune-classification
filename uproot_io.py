@@ -105,7 +105,7 @@ class Events:
         self.event_number = seq_events
         
     def is_track_setter(self) -> bool:
-        is_track = np.zeros_like(self.mc_pdg)
+        is_track = np.ones_like(self.mc_pdg)
         is_track[np.where((self.mc_pdg == 11) | (self.mc_pdg == -11) | (self.mc_pdg == 22))] = 0
         return is_track
         
