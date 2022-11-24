@@ -6,15 +6,14 @@ from variables import *
 filename = r"C:\Users\red20\Documents\Physics_Project\projects\CheatedRecoFile_1.root"
 events = Events(filename)
 
+savefile = r"C:\Users\red20\Documents\Physics_Project\data.csv"
 particles = np.size(events.mc_pdg)
-
-savefile = r"C:\Users\red20\Documents\Physics_Project\Data.csv"
 
 file = open(savefile,'w',newline='', encoding='utf-8')
 writer = csv.writer(file)
 header = ['rms_w','rms_v','rms_u']
 writer.writerow(header)
-for i in range(100):
+for i in range(particles):
     row = np.array([])
     
     for d in ['w','v','u']:
