@@ -8,6 +8,16 @@ def pdg_idx(event_obj,pdg_code,min_hits,purity):
     idx = [i for i in temp if (event_obj.reco_num_hits_w[i] >= min_hits) and (event_obj.reco_num_hits_u[i] >= min_hits) and (event_obj.reco_num_hits_v[i] >= min_hits) and (event_obj.purity[i] >= purity)]
     return idx
 
+def tracks_idx(event_obj,min_hits,purity):
+    temp = np.where(event_obj.is_track == 1)[0]
+    idx = [i for i in temp if (event_obj.reco_num_hits_w[i] >= min_hits) and (event_obj.reco_num_hits_u[i] >= min_hits) and (event_obj.reco_num_hits_v[i] >= min_hits) and (event_obj.purity[i] >= purity)]    
+    return idx
+
+def showers_idx(event_obj,min_hits,purity):
+    temp = np.where(event_obj.is_track == 0)[0]
+    idx = [i for i in temp if (event_obj.reco_num_hits_w[i] >= min_hits) and (event_obj.reco_num_hits_u[i] >= min_hits) and (event_obj.reco_num_hits_v[i] >= min_hits) and (event_obj.purity[i] >= purity)]    
+    return idx
+
 def particle_data(event_obj,num_particle,direction):
     hits_x_direction = np.array([])
     hits_x = np.array([])
