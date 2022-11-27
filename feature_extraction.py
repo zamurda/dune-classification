@@ -1,30 +1,36 @@
 import numpy as np
 from uproot_io import Events
-from numpy import poly1d
-from scipy.interpolate import interp1d
 
-def conf(event_obj: Events, metric, cut, invalid_ids):
-    #right of cut is shw
-    actual = np.delete(event_obj.is_shower, invalid_ids)
-    predicted = np.zeros_like(metric)
-    predicted[np.where(metric > cut)] = 1
+def conf(pred, target, invalid_ids=None):
+    """
+    Confusion matrix for a simple binary classifier
+    """
+    if invalid_ids is not None:
+        actual = np.delete(target, invalid_ids)
+    else:
+        actual = target
     
     ttat = 0
     ttas = 0
     tsat = 0
     tsas = 0
-    for e in zip(actual, predicted):
-        if e[0] == 0 and e[1] == 0:
+    for e in zip(actual, pred):
+        if e[0] == 1 and e[1] == 1:
             ttat += 1
-        elif e[0] == 0 and e[1] == 1:
-            ttas += 1
         elif e[0] == 1 and e[1] == 0:
+            ttas += 1
+        elif e[0] == 0 and e[1] == 1:
             tsat += 1
         else:
             tsas += 1
-    trk_correctness = ttat/len(np.where(actual == 0)[0])
-    shw_correctness = tsas/len(np.where(actual == 1)[0])
-    return [ttat, ttas, tsat, tsas], trk_correctness, shw_correctness
+    tpr = ttat/(ttat+ttas)
+    fnr = 1-tpr
+    tnr = tsas/(tsas+tsat)
+    fpr = 1-tnr
+    return [
+        [tpr, fnr],
+        [fpr, tnr]
+    ]
 
 def adc_res(event_obj: Events, iter: list):
     res_arr = np.array([])
@@ -50,3 +56,17 @@ def adc_res(event_obj: Events, iter: list):
             continue
     
     return res_arr, invalid
+
+def michel(event_obj: Events, iter: list):
+    energies = np.array([])
+    for idx in iter:
+        adc = event_obj.reco_adcs_w[idx]
+        tot = np.sum(adc)
+        last = np.sum(adc[len(iter)-(len(iter)//10)-1:len(iter)])
+        print(tot, last, last/tot)
+        energies = np.append(energies, last/tot)
+    return energies
+
+class Features:
+    def __init__(self, filename: str, create=False):
+        pass
