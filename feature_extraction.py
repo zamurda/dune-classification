@@ -1,7 +1,7 @@
 import numpy as np
 from uproot_io import Events
 
-def conf(pred, target, invalid_ids=None):
+def conf(pred, target, invalid_ids=None, diagnostic=False):
     """
     Confusion matrix for a simple binary classifier
     """
@@ -24,13 +24,14 @@ def conf(pred, target, invalid_ids=None):
         else:
             tsas += 1
     tpr = ttat/(ttat+ttas)
-    fnr = 1-tpr
+    fnr = ttas/(ttas+ttat)
     tnr = tsas/(tsas+tsat)
-    fpr = 1-tnr
+    fpr = tsat/(tsat+tsas)
+    precision = ttat/(ttat+tsat)
     return [
         [tpr, fnr],
         [fpr, tnr]
-    ]
+    ] if not diagnostic else (tpr,precision)
 
 def adc_res(event_obj: Events, iter: list):
     res_arr = np.array([])
