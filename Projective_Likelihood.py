@@ -162,7 +162,7 @@ def MVA_var(tr,sh,file):
 def MVAconf(tr,sh,divide,file):
     tracks, showers = MVA_var(tr,sh,file)
     
-    showers_as_shower = np.size([i for i in showers if i > divide])
+    showers_as_shower = np.size([i for i in showers if i < divide])
     showers_as_track = np.size(showers) - showers_as_shower
     tracks_as_shower = np.size([i for i in tracks if i < divide])
     tracks_as_track = np.size(tracks) - tracks_as_shower
@@ -172,6 +172,6 @@ def MVAconf(tr,sh,divide,file):
     SasT = (showers_as_track)/(showers_as_shower+showers_as_track)
     SasS = (showers_as_shower)/(showers_as_shower+showers_as_track)
 
-    return [[ [TasT,SasT],
-    [TasS,SasS] ]]
+    return [ [TasT,SasT],
+    [TasS,SasS] ]
 

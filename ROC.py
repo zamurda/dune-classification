@@ -7,29 +7,20 @@ import pandas as pd
 def ROC_divide(tr,sh):
     minimum = min(min(tr),min(sh))
     maximum = max(max(tr),max(sh))
-    track = np.sort(tr)
-    shower = np.sort(sh)
     divisions = 500
     ep_radius_max = 0
 
     for i in range(divisions+1):
         divide = minimum + i*(maximum - minimum)/divisions
-        for j in range(np.size(track)):
-            if track[j] > divide:
-                track_astrack = j
-                track_asshower = np.size(track) - j
-                break
-
-        for j in range(np.size(shower)):
-            if shower[j] > divide:
-                shower_astrack = j
-                shower_asshower = np.size(shower)-j
-                break
         
-        efficiency = (track_astrack)/(track_astrack+shower_astrack)
-        purity = (track_astrack)/(track_astrack+track_asshower)
+        showers_as_shower = np.size([i for i in sh if i < divide])
+        showers_as_track = np.size(sh) - showers_as_shower
+        tracks_as_shower = np.size([i for i in tr if i < divide])
+        tracks_as_track = np.size(tr) - tracks_as_shower
+        
+        efficiency = (tracks_as_track)/((tracks_as_track)+showers_as_track)
+        purity = (tracks_as_track)/((tracks_as_track)+tracks_as_shower)
 
-    
         ep_radius = efficiency**2 + purity**2
         
         if ep_radius > ep_radius_max:
@@ -41,31 +32,22 @@ def ROC_divide(tr,sh):
 def ROC_curve(tr,sh):
     minimum = min(min(tr),min(sh))
     maximum = max(max(tr),max(sh))
-    track = np.sort(tr)
-    shower = np.sort(sh)
 
     track_efficiency = np.array([])
     track_purity = np.array([])
-    divisions = 400
+    divisions = 500
     ep_radius_max = 0
 
     for i in range(divisions+1):
         divide = minimum + i*(maximum - minimum)/divisions
-        for j in range(np.size(track)):
-            if track[j] > divide:
-                track_astrack = j
-                track_asshower = np.size(track) - j
-                break
-
-        for j in range(np.size(shower)):
-            if shower[j] > divide:
-                shower_astrack = j
-                shower_asshower = np.size(shower)-j
-                break
         
-        efficiency = (track_astrack)/(track_astrack+shower_astrack)
-        purity = (track_astrack)/(track_astrack+track_asshower)
-
+        showers_as_shower = np.size([i for i in sh if i > divide])
+        showers_as_track = np.size(sh) - showers_as_shower
+        tracks_as_shower = np.size([i for i in tr if i > divide])
+        tracks_as_track = np.size(tr) - tracks_as_shower
+        
+        efficiency = (tracks_as_track)/(tracks_as_track+showers_as_track)
+        purity = (tracks_as_track)/(tracks_as_track+tracks_as_shower)
     
         ep_radius = efficiency**2 + purity**2
         if ep_radius > ep_radius_max:
