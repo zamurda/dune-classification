@@ -1,33 +1,23 @@
 import numpy as np
 from uproot_io import Events
 
-def conf(pred, target, invalid_ids=None, diagnostic=False):
+def conf(pred, target, diagnostic=False):
     """
-    Confusion matrix for a simple binary classifier
+    Returns confusion matrix for a  binary classifier
     """
-    if invalid_ids is not None:
-        actual = np.delete(target, invalid_ids)
-    else:
-        actual = target
+        
+    rp = np.size(np.where(target==1)[0])
+    rn = np.size(np.where(target==0)[0])
+    tp = np.count_nonzero((pred==1) & (target==1))
+    tn = np.count_nonzero((pred==0) & (target==0))
     
-    ttat = 0
-    ttas = 0
-    tsat = 0
-    tsas = 0
-    for e in zip(actual, pred):
-        if e[0] == 1 and e[1] == 1:
-            ttat += 1
-        elif e[0] == 1 and e[1] == 0:
-            ttas += 1
-        elif e[0] == 0 and e[1] == 1:
-            tsat += 1
-        else:
-            tsas += 1
-    tpr = ttat/(ttat+ttas)
-    fnr = ttas/(ttas+ttat)
-    tnr = tsas/(tsas+tsat)
-    fpr = tsat/(tsat+tsas)
-    precision = ttat/(ttat+tsat)
+    tpr = tp/rp
+    fnr = 1-tpr
+    tnr = tn/rn
+    fpr = 1-tnr
+    
+    precision = tp/(tp+(fpr*rn))
+    
     return [
         [tpr, fnr],
         [fpr, tnr]
