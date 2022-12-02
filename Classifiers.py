@@ -79,7 +79,7 @@ class ProjectiveLikelihood:
         
         #return cov matrix
         if dinfo:
-            return np.cov(self.X_train, rowvar=False)
+            return np.corrcoef(self.X_train, rowvar=False)
             
 
     def test(self, plot=True, optimize=True):
