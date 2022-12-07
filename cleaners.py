@@ -10,7 +10,7 @@ def _delete_particles(event_obj, idx_arr) -> None:
     for attr in attr_list:
         setattr(event_obj, attr, np.delete((getattr(event_obj, attr)), idx_arr, 0))
 
-def quality_cut(event_obj: Events, event_num = False, var_names: tuple = ("purity", "completeness", "reco_num_hits_total"),
+def quality_cut(event_obj: Events, event_num = False, var_names: tuple = ("purity", "completeness", "reco_num_hits_w"),
                 reqs: tuple = (0.8, 0.8, 15)) -> None:
     #check if all variable names are valid and each variable has a valid requirement
     if all(var in dir(event_obj) for var in var_names) and len(var_names) == len(reqs):

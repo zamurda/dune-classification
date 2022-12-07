@@ -79,7 +79,7 @@ class ProjectiveLikelihood:
         
         #return cov matrix
         if dinfo:
-            return np.cov(self.X_train, rowvar=False)
+            return np.corrcoef(self.X_train, rowvar=False)
             
 
     def test(self, plot=True, optimize=True):
@@ -99,8 +99,8 @@ class ProjectiveLikelihood:
         if plot:
             sig = self.L_sig[np.where(self.y_test==1)]
             bkg = self.L_sig[np.where(self.y_test==0)]
-            plt.hist(sig, color="b")
-            plt.hist(bkg, color="r")
+            plt.hist(sig, 100, color="b", histtype="step", log=True)
+            plt.hist(bkg, 100, color="r", histtype="step", log=True)
             plt.show()
         
         #optimize cut if needed
@@ -171,7 +171,7 @@ def compute_likelihoods(pdfs, bins, features):
     l = np.ones_like(features[0])
     i=0
     for pdf,feature in zip(pdfs,features):
-        pdf[np.where(pdf==0.0)] = np.min(pdf)/1000
+        pdf[np.where(pdf==0.0)] = 1/10000
         bin_num = np.digitize(feature, bins[i]) - 1 #to get correct hist array index
         #edge case handling
         bin_num[np.where(bin_num == (len(bins[i])-1))] = len(bins[i])-2
