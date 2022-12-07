@@ -1,5 +1,7 @@
 from uproot_io import Events, View
 import numpy as np
+from cleaners import createKnl
+from scipy.stats import binned_statistic
 
 particle_id_dict = {-2212:"ANTIPROTON", -321:"KAON -", -211:"PION -", -13:"MUON -", -11:"ELECTRON", 0:"NO BEST MATCH", 11:"POSTIRON", 13:"MUON +", 22:"GAMMA", 211:"PION +", 321:"KAON +", 2212:"PROTON", 3112:"SIGMA -", 3222:"SIGMA +"}
 
@@ -77,3 +79,41 @@ def particle_rms(event_obj,num_particle,direction):
     if np.size(rms) == 0:
         return 0
     return rms
+
+def binned_energy_ratio(event_obj: Events, iter: list, direction: str):
+    ratio = np.array([])
+    
+    for i in iter:
+        
+        if direction.lower() == "u":
+            x = event_obj.reco_hits_x_u[i]
+            if x[0] > x[-1]:
+                x = np.flip(x)
+            y = event_obj.reco_hits_u[i]
+            adc = event_obj.reco_adcs_u[i]
+            
+        elif direction.lower() == "v":
+            x = event_obj.reco_hits_x_v[i]
+            if x[0] > x[-1]:
+                x = np.flip(x)
+            y = event_obj.reco_hits_v[i]
+            adc = event_obj.reco_adcs_v[i]
+            
+        elif direction.lower() == "w":
+            x = event_obj.reco_hits_x_w[i]
+            if x[0] > x[-1]:
+                x = np.flip(x)
+            y = event_obj.reco_hits_w[i]
+            adc = event_obj.reco_adcs_w[i]
+        
+        else:
+            raise ValueError(f"expected u,v,w as direction, recieved {direction.lower()}")
+        
+        K,w = createKnl(np.size(x), 2)
+        grad,intercept = np.polyfit(x,y,1)
+        path = (grad*x+intercept)[w-1:]
+        convolved = np.convolve(adc,K,"valid")
+        means,bins,binindices = binned_statistic(path,convolved)
+        
+        ratio = np.append(ratio,np.mean(means[0:3])/np.mean(means[8:]))
+        return ratio
