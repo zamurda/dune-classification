@@ -19,29 +19,28 @@ def showers_idx(event_obj,min_hits,purity):
     return idx
 
 def particle_data(event_obj,num_particle,direction):
-    hits_x_direction = np.array([])
-    hits_x = np.array([])
 
     if direction.lower() == "u":
-        for i in range(event_obj.reco_num_hits_u[num_particle]):
-            hits_x = np.append(hits_x, event_obj.reco_hits_u[num_particle][i])
-            hits_x_direction = np.append(hits_x_direction, event_obj.reco_hits_x_u[num_particle][i])
+        nhits = event_obj.reco_num_hits_u[num_particle]
+        hits_x = event_obj.reco_hits_u[num_particle]
+        hits_x_direction = event_obj.reco_hits_x_u[num_particle]
        
     if direction.lower() == 'v':
-        for i in range(event_obj.reco_num_hits_v[num_particle]):
-            hits_x = np.append(hits_x, event_obj.reco_hits_v[num_particle][i])
-            hits_x_direction = np.append(hits_x_direction, event_obj.reco_hits_x_v[num_particle][i])
+        nhits = event_obj.reco_num_hits_v[num_particle]
+        hits_x = event_obj.reco_hits_v[num_particle]
+        hits_x_direction = event_obj.reco_hits_x_v[num_particle]
         
     if direction.lower() == "w":
-        for i in range(event_obj.reco_num_hits_w[num_particle]):
-            hits_x = np.append(hits_x, event_obj.reco_hits_w[num_particle][i])
-            hits_x_direction = np.append(hits_x_direction, event_obj.reco_hits_x_w[num_particle][i])
+        nhits = event_obj.reco_num_hits_w[num_particle]
+        hits_x = event_obj.reco_hits_w[num_particle]
+        hits_x_direction = event_obj.reco_hits_x_w[num_particle]
     
-    hits_bf = np.polyfit(hits_x,hits_x_direction,1)
-    hits_x_direction_fit= [i * hits_bf[0] + hits_bf[1] for i in hits_x]
-    residuals = np.subtract(hits_x_direction,hits_x_direction_fit)
-    length = ((hits_x[0]-hits_x[-1])**2 + (hits_x_direction_fit[0]-hits_x_direction_fit[-1])**2)**0.5
-    return residuals, length
+    coeff, residual,x,y,z = np.polyfit(hits_x,hits_x_direction,1,full=True)
+    length = ((hits_x[0]-hits_x[-1])**2 + (coeff[0]*hits_x[0]-coeff[0]*hits_x[-1])**2)**0.5
+    rms = (residual/nhits)**0.5
+    if nhits in [0,1]:
+        return 0,0
+    return rms, length
 
 def particle_length(event_obj,num_particle,direction):
     length = particle_data(event_obj,num_particle,direction)[1]
@@ -51,27 +50,30 @@ def particle_sinuousity(event_obj,num_particle,direction):
     path_length = 0
 
     if direction.lower() == "u":
-        for i in range(event_obj.reco_num_hits_u[num_particle]):
+        for i in range(1,event_obj.reco_num_hits_u[num_particle]):
             dx = event_obj.reco_hits_u[num_particle][i] - event_obj.reco_hits_u[num_particle][i-1]
             dy = event_obj.reco_hits_x_u[num_particle][i] - event_obj.reco_hits_x_u[num_particle][i-1]
             path_length += (dx**2+dy**2)**0.5
        
     if direction.lower() == 'v':
-        for i in range(event_obj.reco_num_hits_v[num_particle]):
+        for i in range(1,event_obj.reco_num_hits_v[num_particle]):
             dx = event_obj.reco_hits_v[num_particle][i] - event_obj.reco_hits_v[num_particle][i-1]
             dy = event_obj.reco_hits_x_v[num_particle][i] - event_obj.reco_hits_x_v[num_particle][i-1]
             path_length += (dx**2+dy**2)**0.5
     
     if direction.lower() == "w":
-        for i in range(event_obj.reco_num_hits_w[num_particle]):
+        for i in range(1,event_obj.reco_num_hits_w[num_particle]):
             dx = event_obj.reco_hits_w[num_particle][i] - event_obj.reco_hits_w[num_particle][i-1]
             dy = event_obj.reco_hits_x_w[num_particle][i] - event_obj.reco_hits_x_w[num_particle][i-1]
             path_length += (dx**2+dy**2)**0.5
 
     length = particle_data(event_obj,num_particle,direction)[1]
+    if length == 0:
+        return 0
     return path_length/length
 
 def particle_rms(event_obj,num_particle,direction):
-    residuals = particle_data(event_obj,num_particle,direction)[0]
-    rms = np.std(residuals)
+    rms = particle_data(event_obj,num_particle,direction)[0]
+    if np.size(rms) == 0:
+        return 0
     return rms

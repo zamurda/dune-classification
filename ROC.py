@@ -35,10 +35,10 @@ def ROC_curve(tr,sh):
 
     track_efficiency = np.array([])
     track_purity = np.array([])
-    divisions = 500
+    divisions = 2000
     ep_radius_max = 0
 
-    for i in range(divisions+1):
+    for i in range(divisions+2):
         divide = minimum + i*(maximum - minimum)/divisions
         
         showers_as_shower = np.size([i for i in sh if i > divide])
@@ -49,7 +49,7 @@ def ROC_curve(tr,sh):
         efficiency = (tracks_as_track)/(tracks_as_track+showers_as_track)
         purity = (tracks_as_track)/(tracks_as_track+tracks_as_shower)
     
-        ep_radius = efficiency**2 + purity**2
+        ep_radius = efficiency+purity
         if ep_radius > ep_radius_max:
             ep_radius_max = ep_radius
             best_divide = divide
