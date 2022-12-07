@@ -18,6 +18,7 @@ def quality_cut(event_obj: Events, event_num = False, var_names: tuple = ("purit
         #first add indices where hit arrays are empty
         empty_mask = [np.any(i) for i in event_obj.reco_hits_x_w]
         indices = np.append(indices, [[i for i,val in enumerate(empty_mask) if not val]])
+        
         if not event_num:
             #get indices where requirements are not met and pick out the unique indices
             for idx, attr in enumerate(var_names):
@@ -28,7 +29,7 @@ def quality_cut(event_obj: Events, event_num = False, var_names: tuple = ("purit
             _delete_particles(event_obj, indices)
           
         else:
-            #do same but only for records in a particular event
+            #do same but only for records in a particular event_obj
             event_idxs = np.where(event_obj.event_number == event_num)
             for idx, attr in enumerate(var_names):
                 np.concatenate(np.where(getattr(event_obj, attr)[event_idxs[0]:(event_idxs[-1]+1)] < reqs[idx])[0], indices)
@@ -38,4 +39,21 @@ def quality_cut(event_obj: Events, event_num = False, var_names: tuple = ("purit
           
     else:
         raise RuntimeError("Variable names are invalid and/or each variable does not have a requirement")
+    
+def createKnl(n_hits,s):
+    kSize = lambda x: int(np.floor(6*np.log10(x+1))) if x < 200 else int(np.floor(6*np.log(x+1)))
+    if n_hits <= 15:
+        w = 3
+    elif n_hits <= 40:
+        w = int(np.floor(3*np.log10(n_hits+1)))
+    else:
+        w = kSize(n_hits)
+    mid = w//2
+    return ((1/(np.sqrt(np.pi*2)*s)) * np.exp((-np.linspace(-mid,mid,w)**2)/(2*(s**2)))), w
+
+def zRemove(vals, max_z):
+    s = np.std(vals)
+    m = np.mean(vals)
+    z = (vals - m)/s
+    return vals[np.abs(z) < max_z]
     
