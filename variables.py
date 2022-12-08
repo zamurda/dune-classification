@@ -80,40 +80,35 @@ def particle_rms(event_obj,num_particle,direction):
         return 0
     return rms
 
-def binned_energy_ratio(event_obj: Events, iter: list, direction: str):
-    ratio = np.array([])
+def binned_energy_ratio(event_obj: Events, num_particle, direction: str):    
+    if direction.lower() == "u":
+        x = event_obj.reco_hits_x_u[num_particle]
+        if x[0] > x[-1]:
+            x = np.flip(x)
+        y = event_obj.reco_hits_u[num_particle]
+        adc = event_obj.reco_adcs_u[num_particle]         
+    elif direction.lower() == "v":
+        x = event_obj.reco_hits_x_v[num_particle]
+        if x[0] > x[-1]:
+            x = np.flip(x)
+        y = event_obj.reco_hits_v[num_particle]
+        adc = event_obj.reco_adcs_v[num_particle]        
+    elif direction.lower() == "w":
+        x = event_obj.reco_hits_x_w[num_particle]
+        if x[0] > x[-1]:
+            x = np.flip(x)
+        y = event_obj.reco_hits_w[num_particle]
+        adc = event_obj.reco_adcs_w[num_particle]    
+    else:
+        raise ValueError(f"expected u,v,w as direction, recieved {direction.lower()}")
+        
+    K,w = createKnl(np.size(x), 2)
+    grad,intercept = np.polyfit(x,y,1)
+    path = (grad*x+intercept)[w-1:]
+    convolved = np.convolve(adc,K,"valid")
+    arr = np.linspace(min(path),max(path),11)
+    means,bins,binindices = binned_statistic(path,convolved,bins = [arr[0],arr[3],arr[8],arr[10]])
+        
+    ratio = means[0]/means[2]
     
-    for i in iter:
-        
-        if direction.lower() == "u":
-            x = event_obj.reco_hits_x_u[i]
-            if x[0] > x[-1]:
-                x = np.flip(x)
-            y = event_obj.reco_hits_u[i]
-            adc = event_obj.reco_adcs_u[i]
-            
-        elif direction.lower() == "v":
-            x = event_obj.reco_hits_x_v[i]
-            if x[0] > x[-1]:
-                x = np.flip(x)
-            y = event_obj.reco_hits_v[i]
-            adc = event_obj.reco_adcs_v[i]
-            
-        elif direction.lower() == "w":
-            x = event_obj.reco_hits_x_w[i]
-            if x[0] > x[-1]:
-                x = np.flip(x)
-            y = event_obj.reco_hits_w[i]
-            adc = event_obj.reco_adcs_w[i]
-        
-        else:
-            raise ValueError(f"expected u,v,w as direction, recieved {direction.lower()}")
-        
-        K,w = createKnl(np.size(x), 2)
-        grad,intercept = np.polyfit(x,y,1)
-        path = (grad*x+intercept)[w-1:]
-        convolved = np.convolve(adc,K,"valid")
-        means,bins,binindices = binned_statistic(path,convolved)
-        
-        ratio = np.append(ratio,np.mean(means[0:3])/np.mean(means[8:]))
-        return ratio
+    return ratio

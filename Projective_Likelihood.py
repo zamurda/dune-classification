@@ -1,7 +1,7 @@
 import numpy as np
-import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
+from cleaners import *
 
 def prob_var(tr,sh,bins):
     max_tr = max(tr)
@@ -11,16 +11,24 @@ def prob_var(tr,sh,bins):
     
     T_prob = np.array([])
     S_prob = np.array([])
-    
-    if max_tr > max_sh:
-        bins_array =np.concatenate(([min_tr],[min_sh + i*((max_sh-min_sh)/bins) for i in range(bins+1)],[max_tr]))
-    else:
-        bins_array =np.concatenate(([min_tr],[min_sh + i*((max_tr-min_sh)/bins) for i in range(bins+1)]))
-   
-    tr_pdf = np.histogram(tr,bins=bins_array,density=True)[0]
-    sh_pdf = np.histogram(sh,bins=bins_array,density=True)[0]
 
-    for i in range(np.size(bins_array)-1):
+    if max_sh > max_tr and min_tr < min_sh:
+        bins_arr = np.concatenate(([min_tr],np.linspace(min_sh,max_tr,bins+1)))
+    elif max_sh > max_tr and min_sh < min_tr:
+        bins_arr = np.concatenate(([min_sh],np.linspace(min_tr,max_tr,bins+1)))
+    elif max_tr > max_sh and min_tr <= min_sh:
+        bins_arr = np.concatenate(([min_tr],np.linspace(min_sh,max_sh,bins+1),[max_tr]))
+    elif max_tr > max_sh and min_sh <= min_tr:
+        bins_arr = np.concatenate(([min_sh],np.linspace(min_tr,max_sh,bins+1),[max_tr]))
+    elif min_tr == min_sh and max_sh > max_tr:
+        bins_arr = np.linspace(min_sh,max_tr,bins+1)
+    elif min_tr == max_sh and max_tr > max_sh:
+        bins_arr = np.concatenate((np.linspace(min_sh,max_sh),[max_tr]))
+    
+    tr_pdf = np.histogram(tr,bins=bins_arr,density=True)[0]
+    sh_pdf = np.histogram(sh,bins=bins_arr,density=True)[0]
+
+    for i in range(np.size(bins_arr)-1):
         if (tr_pdf[i] == 0):
             T_prob = np.append(T_prob,0.001)
             S_prob = np.append(S_prob,1)
@@ -31,11 +39,12 @@ def prob_var(tr,sh,bins):
             T_prob = np.append(T_prob,tr_pdf[i]/(sh_pdf[i]+tr_pdf[i]))
             S_prob = np.append(S_prob,sh_pdf[i]/(sh_pdf[i]+tr_pdf[i]))
 
-    return T_prob,S_prob,bins_array
+    return T_prob,S_prob,bins_arr
 
-def PL(tr,sh,file):
-    np.random.shuffle(tr)
-    np.random.shuffle(sh)
+def PL(tr,sh,data,shuffle):
+    if shuffle == True:
+        np.random.shuffle(tr)
+        np.random.shuffle(sh)
     
     bins = 30
     training = 0.75
@@ -49,9 +58,8 @@ def PL(tr,sh,file):
     L_sig_showers = np.ones_like(sh_test)
     L_bck_showers = np.ones_like(sh_test)
 
-    data = pd.read_csv(file)
-    for col in data.columns:
-        var = data[col]
+    for col in range(np.size(data[0])):
+        var = data[:,col]
         tr_training_var = var[tr_training]
         sh_training_var = var[sh_training]
         tr_test_var = var[tr_test]
@@ -101,16 +109,16 @@ def PL(tr,sh,file):
 
     return MVA_tracks, MVA_showers
 
-def MVA_var(tr,sh,file):
+def MVA_var(tr,sh,data):
     bins = 30
     L_sig_tracks = np.ones_like(tr)
     L_bck_tracks = np.ones_like(tr)
     L_sig_showers = np.ones_like(sh)
     L_bck_showers = np.ones_like(sh)
 
-    data = pd.read_csv(file)
-    for col in data.columns:
-        var = data[col]
+    rows, columns =data.shape
+    for col in range(columns):
+        var = data[:,col]
         tr_var = [var[i] for i in tr]
         sh_var = [var[i] for i in sh]
 
@@ -160,20 +168,18 @@ def MVA_var(tr,sh,file):
 
     return MVA_tracks, MVA_showers
 
-def MVAconf(tr,sh,divide,file,test):
+def MVAconf(tr,sh,divide,data,test):
     if test == 0:
-        tracks,showers = PL(tr,sh,file)
+        tr,sh = PL(tr,sh,data)
     elif test == 1:
-        tracks, showers = MVA_var(tr,sh,file)
-    elif test == 2:
-        tr, sh = tracks, showers
-    else:
+        tr, sh = MVA_var(tr,sh,data)
+    elif test != 2:
         print("Invalid test parameter:\ntest == 0 for PL on sample\ntest == 0 for full MVA on sample\ntest == 2 for inputs being a variable, file not needed")
 
-    showers_as_shower = np.size([i for i in showers if i < divide])
-    showers_as_track = np.size(showers) - showers_as_shower
-    tracks_as_shower = np.size([i for i in tracks if i < divide])
-    tracks_as_track = np.size(tracks) - tracks_as_shower
+    showers_as_shower = np.size([i for i in sh if i < divide])
+    showers_as_track = np.size(sh) - showers_as_shower
+    tracks_as_shower = np.size([i for i in tr if i < divide])
+    tracks_as_track = np.size(tr) - tracks_as_shower
 
     TTasT = (tracks_as_track)/(tracks_as_track+tracks_as_shower)
     TTasS = (tracks_as_shower)/(tracks_as_track+tracks_as_shower)
