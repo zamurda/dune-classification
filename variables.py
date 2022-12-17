@@ -1,6 +1,6 @@
 from uproot_io import Events, View
 import numpy as np
-from cleaners import createKnl
+from dctools.feature_engineering import create_knl
 from scipy.stats import binned_statistic
 
 particle_id_dict = {-2212:"ANTIPROTON", -321:"KAON -", -211:"PION -", -13:"MUON -", -11:"ELECTRON", 0:"NO BEST MATCH", 11:"POSTIRON", 13:"MUON +", 22:"GAMMA", 211:"PION +", 321:"KAON +", 2212:"PROTON", 3112:"SIGMA -", 3222:"SIGMA +"}
@@ -102,7 +102,7 @@ def binned_energy_ratio(event_obj: Events, num_particle, direction: str):
     else:
         raise ValueError(f"expected u,v,w as direction, recieved {direction.lower()}")
         
-    K,w = createKnl(np.size(x), 2)
+    K,w = create_knl(np.size(x), 2)
     grad,intercept = np.polyfit(x,y,1)
     path = (grad*x+intercept)[w-1:]
     convolved = np.convolve(adc,K,"valid")

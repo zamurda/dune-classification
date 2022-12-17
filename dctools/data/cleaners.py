@@ -1,8 +1,8 @@
-from argparse import ArgumentError
-from uproot_io import Events
 import numpy as np
-from numpy import ndarray
-import inspect
+
+
+__all__ = ["quality_cut"]
+
 
 def _delete_particles(event_obj, idx_arr) -> None:
     #list of attributes
@@ -10,7 +10,7 @@ def _delete_particles(event_obj, idx_arr) -> None:
     for attr in attr_list:
         setattr(event_obj, attr, np.delete((getattr(event_obj, attr)), idx_arr, 0))
 
-def quality_cut(event_obj: Events, event_num = False, var_names: tuple = ("purity", "completeness", "reco_num_hits_w"),
+def quality_cut(event_obj, event_num = False, var_names: tuple = ("purity", "completeness", "reco_num_hits_w"),
                 reqs: tuple = (0.8, 0.8, 15)) -> None:
     #check if all variable names are valid and each variable has a valid requirement
     if all(var in dir(event_obj) for var in var_names) and len(var_names) == len(reqs):
@@ -39,21 +39,4 @@ def quality_cut(event_obj: Events, event_num = False, var_names: tuple = ("purit
           
     else:
         raise RuntimeError("Variable names are invalid and/or each variable does not have a requirement")
-    
-def createKnl(n_hits,s):
-    kSize = lambda x: int(np.floor(6*np.log10(x+1))) if x < 200 else int(np.floor(6*np.log(x+1)))
-    if n_hits <= 15:
-        w = 3
-    elif n_hits <= 40:
-        w = int(np.floor(3*np.log10(n_hits+1)))
-    else:
-        w = kSize(n_hits)
-    mid = w//2
-    return ((1/(np.sqrt(np.pi*2)*s)) * np.exp((-np.linspace(-mid,mid,w)**2)/(2*(s**2)))), w
-
-def zRemove(vals, max_z):
-    s = np.std(vals)
-    m = np.mean(vals)
-    z = (vals - m)/s
-    return vals[np.abs(z) < max_z]
     
