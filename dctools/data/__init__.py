@@ -1,2 +1,2 @@
 from .cleaners import *
-import filters
+import dctools.data.filters
