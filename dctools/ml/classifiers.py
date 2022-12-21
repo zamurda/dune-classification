@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from .confusion import conf
+from ..feature_engineering.stats import to_pdf
 
 
 __all__ = [
@@ -38,8 +39,7 @@ class ProjectiveLikelihood:
     """
 
     def __init__(self, features: np.ndarray, target: list, tt_split=0.75, rowvars=True, seed=False):
-        # psuedocount
-        self.pc = 1.0
+
         if isinstance(features, np.ndarray):
             self.features = features
             self.target = target
@@ -64,26 +64,33 @@ class ProjectiveLikelihood:
         else:
             raise TypeError(f"Expected features in np.ndarray, received {type(features)}")
 
-    def train(self, n_bins: int, dinfo=True):
+    def train(self, n_bins: int, dinfo=True, pseudocount=0.0):
+        """
+        Train the classifier by constructing PDF histograms
+        """
+        if isinstance(pseudocount, float) and pseudocount >= 0:
+            pc = pseudocount
+        else:
+            raise TypeError("pseudocount value must be a float")
+
         # create PDF histograms for sig and bkg separately
         sig_pdfs = np.array([])
         sig_bin_edges = np.array([])
         bkg_pdfs = np.array([])
         bkg_bin_edges = np.array([])
         for metric in self.X_train.transpose():
-            s_hist, s_edges = np.histogram(metric[np.where(self.y_train == 1)], bins=n_bins, density=True)
-            b_hist, b_edges = np.histogram(metric[np.where(self.y_train == 0)], bins=n_bins, density=True)
+            s_hist, s_edges = to_pdf(metric[np.where(self.y_train == 1)], bins=n_bins, pseudocount=pc)
+            b_hist, b_edges = to_pdf(metric[np.where(self.y_train == 0)], bins=n_bins, pseudocount=pc)
             sig_pdfs = np.append(sig_pdfs, s_hist)
             sig_bin_edges = np.append(sig_bin_edges, s_edges)
             bkg_pdfs = np.append(bkg_pdfs, b_hist)
             bkg_bin_edges = np.append(bkg_bin_edges, b_edges)
 
+        # reshape pdfs and bin edge arrays
         self.sig_pdfs = sig_pdfs.reshape(np.shape(self.X_train)[1], n_bins)
         self.sig_bin_edges = sig_bin_edges.reshape(np.shape(self.X_train)[1], n_bins + 1)
         self.bkg_pdfs = bkg_pdfs.reshape(np.shape(self.X_train)[1], n_bins)
         self.bkg_bin_edges = bkg_bin_edges.reshape(np.shape(self.X_train)[1], n_bins + 1)
-
-        # add psuedocount?
 
         # return cov matrix
         if dinfo:
@@ -93,6 +100,7 @@ class ProjectiveLikelihood:
         """
         --  full returns confusion matrix
         --  plot=True plots the likelihood ratio histogram
+        -- optimize=True optimizes the likelihood cut by maximising the trace of the confusion matrix
         """
         self.cut = 0.5
 
@@ -100,7 +108,6 @@ class ProjectiveLikelihood:
         l_s = compute_likelihoods(self.sig_pdfs, self.sig_bin_edges, self.X_test.transpose())
         l_b = compute_likelihoods(self.bkg_pdfs, self.bkg_bin_edges, self.X_test.transpose())
         self.L_sig = (self.pr_sig * l_s) / ((self.pr_sig * l_s) + (self.pr_bkg * l_b))
-        # self.L_sig = (l_s)/((l_s)+(l_b))
 
         # plot likelihood distribution
         if plot:
@@ -110,7 +117,7 @@ class ProjectiveLikelihood:
             plt.hist(bkg, 100, color="r", histtype="step", log=True)
             plt.show()
 
-        # optimize cut if needed
+        # optimize cut
         if optimize:
 
             c = np.linspace(0, 1, 1001, endpoint=False)
@@ -151,6 +158,9 @@ class ProjectiveLikelihood:
         return p
 
     def plot_roc(self):
+        """
+        Plots ROC curve for the model instance
+        """
         cuts = np.linspace(0, 1, 1001, endpoint=False)
         self.efficiency = np.array([])
         self.purity = np.array([])
@@ -172,9 +182,9 @@ class ProjectiveLikelihood:
 
 ########################################################################################################
 def compute_likelihoods(pdfs, bins, features):
-    '''
+    """
     find multinomial likelihood array given an array of pdfs and array of features.
-    '''
+    """
     l = np.ones_like(features[0])
     i = 0
     for pdf, feature in zip(pdfs, features):
