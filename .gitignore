@@ -1,3 +1,6 @@
 
 *.pyc
 *.ipynb
+test.py
+test.py
+.idea/workspace.xml
