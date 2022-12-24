@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import numpy as np
-from sklearn.model_selection import train_test_split
+from ..data import train_test_split
 import matplotlib.pyplot as plt
 from .confusion import conf
 from ..feature_engineering.stats import to_pdf
@@ -38,23 +38,29 @@ class ProjectiveLikelihood:
     Creates a projective likelihood classifier which separates between trks (sig) and shws (bkg)
     """
 
-    def __init__(self, features: np.ndarray, target: list, tt_split=0.75, rowvars=True, seed=False):
+    def __init__(self, features: np.ndarray, target: list, tt_split=0.75, rowvectors=True, seed=False):
 
         if isinstance(features, np.ndarray):
             self.features = features
             self.target = target
 
             # train-test split the data
-            vectors = features.transpose()
+            vectors = features.transpose if not rowvectors else features
             if not seed:
-                self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(vectors,
-                                                                                        target,
-                                                                                        test_size=(1 - tt_split))
-            else:
-                self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(vectors,
+                self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+                                                                                        vectors,
                                                                                         target,
                                                                                         test_size=(1 - tt_split),
-                                                                                        random_state=int(seed))
+                                                                                        return_index=False
+                                                                                        )
+            else:
+                self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+                                                                                        vectors,
+                                                                                        target,
+                                                                                        test_size=(1 - tt_split),
+                                                                                        return_index=False,
+                                                                                        random_state=int(seed)
+                                                                                        )
 
             # prior probabilities
             n_particles = len(features[0])
@@ -68,7 +74,7 @@ class ProjectiveLikelihood:
         """
         Train the classifier by constructing PDF histograms
         """
-        if isinstance(pseudocount, float) and pseudocount >= 0:
+        if isinstance(pseudocount, float):
             pc = pseudocount
         else:
             raise TypeError("pseudocount value must be a float")
@@ -79,8 +85,8 @@ class ProjectiveLikelihood:
         bkg_pdfs = np.array([])
         bkg_bin_edges = np.array([])
         for metric in self.X_train.transpose():
-            s_hist, s_edges = to_pdf(metric[np.where(self.y_train == 1)], bins=n_bins, pseudocount=pc)
-            b_hist, b_edges = to_pdf(metric[np.where(self.y_train == 0)], bins=n_bins, pseudocount=pc)
+            s_hist, s_edges = to_pdf(metric[np.where(self.y_train == 1)], n_bins=n_bins, pseudocount=pc)
+            b_hist, b_edges = to_pdf(metric[np.where(self.y_train == 0)], n_bins=n_bins, pseudocount=pc)
             sig_pdfs = np.append(sig_pdfs, s_hist)
             sig_bin_edges = np.append(sig_bin_edges, s_edges)
             bkg_pdfs = np.append(bkg_pdfs, b_hist)
