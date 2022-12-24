@@ -13,7 +13,7 @@ def _generate_rand():
     return generator.integers(np.iinfo(np.int64).max)
 
 
-def train_test_split(features, targets, test_ratio=0.25, return_index=True, random_state=None):
+def train_test_split(features, targets, indices=None, test_size=0.25, return_index=True, random_state=None):
     """
     custom train-test splitting which has virtually same implementation of sklearn.train_test_split.
 
@@ -31,7 +31,13 @@ def train_test_split(features, targets, test_ratio=0.25, return_index=True, rand
 
     else:
 
-        index_array = np.array(range(len(targets)))
+        index_array = indices if indices is not None else np.array(range(len(targets)))
+        
+        if len(index_array) != len(targets):
+            
+            raise ValueError(
+                f"shape of indices {np.shape(index_array)} does not match shape of features {np.shape(features)}"
+            )
 
         together = (np.vstack([index_array, features.transpose(), targets])).transpose()
         rng.shuffle(together)
@@ -40,7 +46,7 @@ def train_test_split(features, targets, test_ratio=0.25, return_index=True, rand
         index_array = together[:, 0]
         features = together[:, 1:-1]
 
-        split = int(len(targets) * (1-test_ratio))  # index at which train-test is split up
+        split = int(len(targets) * (1-test_size))  # index at which train-test is split up
 
         return (
             features[:split],

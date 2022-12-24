@@ -3,9 +3,10 @@ functions for looking up pdg indexes of particles
 """
 import numpy as np
 import pandas as pd
+from typing import Union
 
 __all__ = [
-    "count_pdg"
+    "count_pdg",
     "pdg_in_bins"
 ]
 
@@ -29,10 +30,10 @@ def count_pdg(df:pd.DataFrame, pdg:int):
 
 
 def pdg_in_bins(
-    pdg_arr:    list|np.ndarray,
-    likelihood: list|np.ndarray,
-    bin_edges:  list|np.ndarray,
-    classes:    list|np.ndarray = None
+    pdg_arr:    list | np.ndarray,
+    likelihood: list | np.ndarray,
+    bin_edges:  list | np.ndarray,
+    classes:    list | np.ndarray = None
     ):
     
     """
