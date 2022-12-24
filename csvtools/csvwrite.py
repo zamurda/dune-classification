@@ -2,7 +2,12 @@ import numpy as np
 import pandas as pd
 from dctools.exceptions import FeatureExtractionError
 import time
-from .helpers import check_unique_headers, file_in_cwd
+import warnings
+from .helpers import (
+    check_unique_headers,
+    file_in_cwd,
+    sep_file_from_path
+)
 
 """
 Functions to assist feature extraction and writing to csv
@@ -64,12 +69,13 @@ def extract_from_uproot(event, funcs, limit=None):
     return features
 
 
-def array_to_csv(filename:str, data:np.ndarray, headers:list, rowvars=True):
+def array_to_csv(filename:str, data:np.ndarray, headers:list, rowvars=True, locked_rows=True):
     """
     filename:str:       filename ending in .csv where the array should be saved
     data:np.ndarray:    data which is to be saved as a csv
     headers:list:       names of column headers
     rowvars:bool:       True if each feature vector in data is a row, false if not
+    locked_rows:bool:   True if no more rows can be added to the dataframe, false if not
     """
     data = data if rowvars else data.transpose()
     if not file_in_cwd(filename):
@@ -81,7 +87,10 @@ def array_to_csv(filename:str, data:np.ndarray, headers:list, rowvars=True):
             raise ValueError("Enter unique headers, or check the same feature isn't appearing twice.")
 
     else:
-        (append_to_df(filename, data, headers, rowvars=rowvars)).to_csv(filename, index=False)
+        if locked_rows:
+            (append_to_df(filename, data, headers, rowvars=rowvars)).to_csv(filename, index=False)
+        else:
+            (add_rows_to_df(filename, data, headers, rowvars=rowvars))
 
 
 def append_to_df(filename:str, data:np.ndarray, headers:list, rowvars=True):
@@ -98,7 +107,41 @@ def append_to_df(filename:str, data:np.ndarray, headers:list, rowvars=True):
         else:
             for i, name in enumerate(headers):
                 new_dict[name] = data[i]
+                
         return df.assign(**new_dict)
 
     else:
         raise ValueError("Enter unique headers")
+
+  
+def add_rows_to_df(filename:str, data:np.ndarray, headers:list, rowvars=True):
+    """
+    Returns a new dataframe with added rows
+    """
+    
+    data = data if rowvars else data.tranpose()
+    df = pd.read_csv(filename)
+    
+    if headers == df.columns.values.tolist():
+        new = pd.DataFrame(data, columns=headers)
+        df = pd.concat((df,new), ignore_index=True)
+    
+    return df
+
+def merge_csvs(filenames:list, headers:list, merged_name:str) -> None:
+    
+    superset = [pd.read_csv(fname) for fname in filenames]
+    
+    for i, df in enumerate(superset):
+        if df.columns.values.tolist() != headers:
+            warnings.warn(
+                f"file {3} does not fit the specified schema"
+            )
+    
+    (pd.concat(superset, ignore_index=True)).to_csv(merged_name, index=True)
+                
+            
+        
+    
+    
+    
