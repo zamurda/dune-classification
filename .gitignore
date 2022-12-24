@@ -4,3 +4,8 @@
 test.py
 test.py
 .idea/workspace.xml
+projectpkg.egg-info/dependency_links.txt
+projectpkg.egg-info/PKG-INFO
+projectpkg.egg-info/requires.txt
+projectpkg.egg-info/SOURCES.txt
+projectpkg.egg-info/top_level.txt
