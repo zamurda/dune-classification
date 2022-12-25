@@ -1,2 +1,2 @@
-from .csvwrite import *
-from .csvread import *
+from csvtools.csvwrite import *
+from csvtools.csvread import *
