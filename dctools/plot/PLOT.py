@@ -1,9 +1,18 @@
-from uproot_io import Events, View
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+from ..data.filters import idx_in_event, pdg_in_event
 
 particle_id_dict = {-2212:"ANTIPROTON", -321:"KAON -", -211:"PION -", -13:"MUON -", -11:"ELECTRON", 0:"NO BEST MATCH", 11:"POSTIRON", 13:"MUON +", 22:"GAMMA", 211:"PION +", 321:"KAON +", 2212:"PROTON", 3112:"SIGMA -", 3222:"SIGMA +"}
+
+
+__all__ = [
+    "plot_hist",
+    "plot_particle",
+    "plot_event",
+    "plot_particle_adcs"
+]
+
 
 def plot_hist(A,B,n_bins,z_score):
     max_A = np.mean(A)+(z_score)*np.std(A)
@@ -66,21 +75,8 @@ def plot_particle_adcs(event_obj,num_particle,direction):
             hits_adcs = np.append(hits_adcs, event_obj.reco_adcs_u[num_particle][i])
     
     plt.scatter(hits_x,hits_adcs,s=8)
+    
 
-def idx_in_event(event_obj,number_event,direction,min_hits,purity):
-    temp = np.where(event_obj.event_number == number_event)[0]
-    if direction.lower() == "w":
-        idx = [i for i in temp if event_obj.reco_num_hits_w[i] > min_hits and event_obj.purity[i] >= purity]
-    if direction.lower() == "v":
-        idx = [i for i in temp if event_obj.reco_num_hits_v[i] > min_hits and event_obj.purity[i] >= purity]
-    if direction.lower() == "u":
-        idx = [i for i in temp if event_obj.reco_num_hits_u[i] > min_hits and event_obj.purity[i] >= purity]
-    return idx
-
-def pdg_in_event(event_obj,number_event,direction,min_hits,purity):
-    particle_pdg = [event_obj.mc_pdg[i] for i in idx_in_event(event_obj,number_event,direction,min_hits,purity)]
-    particle_type = [particle_id_dict[event_obj.mc_pdg[i]] for i in idx_in_event(event_obj,number_event,direction,min_hits,purity)]
-    return particle_pdg,particle_type
 
 def plot_event(event_obj,number_event,direction,min_hits,purity, *args):
     temp = idx_in_event(event_obj,number_event,direction,min_hits,purity)

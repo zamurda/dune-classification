@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from cleaners import *
 
 def prob_var(tr,sh,bins):
     max_tr = max(tr)
