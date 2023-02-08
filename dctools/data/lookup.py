@@ -30,10 +30,10 @@ def count_pdg(df:pd.DataFrame, pdg:int):
 
 
 def pdg_in_bins(
-    pdg_arr:    list | np.ndarray,
-    likelihood: list | np.ndarray,
-    bin_edges:  list | np.ndarray,
-    classes:    list | np.ndarray = None
+    pdg_arr:    list,
+    likelihood: list,
+    bin_edges:  list,
+    classes:    list = None
     ):
     
     """
@@ -81,3 +81,28 @@ def pdg_in_bins(
         
         
     return results_dict, classes_str
+
+
+def pdg_lookup(event,
+               pdg : int,
+               reqs : dict = {
+                "num_hits_w" : 10,
+                "purity" : .8,
+                "completeness" : .9,
+                }
+               ):
+    """
+    Returns indices of specified pfos which meet requirements
+    """
+    
+    all_ids = range(len(event.reco_particle_index))
+    accepted = np.array([])
+    
+    for i in all_ids:
+        vec = [getattr(event, k)[i] for k in reqs.keys()]
+        if vec < reqs[reqs.keys()] or any([v < 0 for v in vec]):
+            continue
+        else:
+            accepted = np.append(accepted(i))
+             
+    return accepted
