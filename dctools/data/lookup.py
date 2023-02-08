@@ -7,7 +7,8 @@ from typing import Union
 
 __all__ = [
     "count_pdg",
-    "pdg_in_bins"
+    "pdg_in_bins",
+    "pdg_lookup"
 ]
 
 
