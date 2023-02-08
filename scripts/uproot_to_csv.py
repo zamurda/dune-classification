@@ -23,7 +23,8 @@ for funcname in variables.__all__:
         headers.append(f"{funcname}_{direction}")
 
 curr_path = os.path.dirname(__file__)
-rawdata_path = os.path.relpath(r"..\\rawdata")
+#rawdata_path = os.path.relpath(r"..\\rawdata")
+rawdata_path = r"c:\\users\\murta\\documents\\project_22\\datasets"
 
 def extract():
     
@@ -49,5 +50,6 @@ full_headers = default_headers + headers + ["target"]
 
 if __name__ == "__main__":
     
+    print(rawdata_path)
     extract()
-    merge_csvs(filenames, full_headers, "FullPandoraFeatures.csv")
+    merge_csvs(filenames, full_headers, "MergedPandoraFeatures12.csv")

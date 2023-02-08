@@ -47,20 +47,20 @@ class ProjectiveLikelihood:
             # train-test split the data
             vectors = features.transpose if not rowvectors else features
             if not seed:
-                self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-                                                                                        vectors,
-                                                                                        target,
-                                                                                        test_size=(1 - tt_split),
-                                                                                        return_index=False
-                                                                                        )
+                self.X_train, self.X_test, self.y_train, self.y_test, self.id_train, self.id_test = train_test_split(
+                                                                                                        vectors,
+                                                                                                        target,
+                                                                                                        test_size=(1 - tt_split),
+                                                                                                        return_index=True
+                                                                                                        )
             else:
-                self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-                                                                                        vectors,
-                                                                                        target,
-                                                                                        test_size=(1 - tt_split),
-                                                                                        return_index=False,
-                                                                                        random_state=int(seed)
-                                                                                        )
+                self.X_train, self.X_test, self.y_train, self.y_test, self.id_train, self.id_test = train_test_split(
+                                                                                                        vectors,
+                                                                                                        target,
+                                                                                                        test_size=(1 - tt_split),
+                                                                                                        return_index=True,
+                                                                                                        random_state=int(seed)
+                                                                                                        )
 
             # prior probabilities
             n_particles = len(features[0])

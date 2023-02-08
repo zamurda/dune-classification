@@ -10,3 +10,4 @@ projectpkg.egg-info/requires.txt
 projectpkg.egg-info/SOURCES.txt
 projectpkg.egg-info/top_level.txt
 *.root
+*.csv
