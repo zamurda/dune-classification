@@ -87,7 +87,7 @@ def pdg_in_bins(
 def pdg_lookup(event,
                pdg : int,
                reqs : dict = {
-                "num_hits_w" : 10,
+                "reco_num_hits_w" : 10,
                 "purity" : .8,
                 "completeness" : .9,
                 }
@@ -96,14 +96,14 @@ def pdg_lookup(event,
     Returns indices of specified pfos which meet requirements
     """
     
-    all_ids = range(len(event.reco_particle_index))
+    all_ids = (np.where(event.mc_pdg == pdg)[0])
     accepted = np.array([])
     
     for i in all_ids:
         vec = [getattr(event, k)[i] for k in reqs.keys()]
-        if vec < reqs[reqs.keys()] or any([v < 0 for v in vec]):
+        if vec < list(reqs.values()) or any([v < 0 for v in vec]):
             continue
         else:
-            accepted = np.append(accepted(i))
+            accepted = np.append(accepted, i)
              
-    return accepted
+    return np.int64(accepted)
