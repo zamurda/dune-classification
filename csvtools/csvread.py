@@ -48,7 +48,7 @@ class LoadFeatures:
                 self.df.reset_index(inplace=True)
             
             self.features = (self.df[self._feature_headers]).to_numpy()
-            self.targets = (self.df[["target"]]).to_numpy()
+            self.targets = (self.df[["target"]]).to_numpy().transpose()[0]
             
                 
     def filter(
