@@ -88,6 +88,8 @@ def pdg_lookup(event,
                pdg : int,
                reqs : dict = {
                 "reco_num_hits_w" : 10,
+                "reco_num_hits_u" : 10,
+                "reco_num_hits_v" : 10,
                 "purity" : .8,
                 "completeness" : .9,
                 }
