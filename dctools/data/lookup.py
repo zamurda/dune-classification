@@ -8,7 +8,9 @@ from typing import Union
 __all__ = [
     "count_pdg",
     "pdg_in_bins",
-    "pdg_lookup"
+    "pdg_lookup",
+    "trk_lookup",
+    "shw_lookup"
 ]
 
 
@@ -99,6 +101,57 @@ def pdg_lookup(event,
     """
     
     all_ids = (np.where(event.mc_pdg == pdg)[0])
+    accepted = np.array([])
+    
+    for i in all_ids:
+        vec = [getattr(event, k)[i] for k in reqs.keys()]
+        if vec < list(reqs.values()) or any([v < 0 for v in vec]):
+            continue
+        else:
+            accepted = np.append(accepted, i)
+             
+    return np.int64(accepted)
+
+
+def trk_lookup(event,
+               reqs : dict = {
+                "reco_num_hits_w" : 10,
+                "reco_num_hits_u" : 10,
+                "reco_num_hits_v" : 10,
+                "purity" : .8,
+                "completeness" : .9,
+                }
+               ):
+    """
+    Returns indices of tracks which meet requirements
+    """
+    
+    all_ids = (np.where(event.is_track == 1)[0])
+    accepted = np.array([])
+    
+    for i in all_ids:
+        vec = [getattr(event, k)[i] for k in reqs.keys()]
+        if vec < list(reqs.values()) or any([v < 0 for v in vec]):
+            continue
+        else:
+            accepted = np.append(accepted, i)
+             
+    return np.int64(accepted)
+
+def shw_lookup(event,
+               reqs : dict = {
+                "reco_num_hits_w" : 10,
+                "reco_num_hits_u" : 10,
+                "reco_num_hits_v" : 10,
+                "purity" : .8,
+                "completeness" : .9,
+                }
+               ):
+    """
+    Returns indices of specified pfos which meet requirements
+    """
+    
+    all_ids = (np.where(event.is_track == 0)[0])
     accepted = np.array([])
     
     for i in all_ids:
