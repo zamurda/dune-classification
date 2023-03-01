@@ -1,7 +1,7 @@
 import numpy as np
 
 
-__all__ = ["quality_cut"]
+__all__ = ["quality_cut", "rotate_pfo_2d"]
 
 
 def _delete_particles(event_obj, idx_arr) -> None:
@@ -39,4 +39,45 @@ def quality_cut(event_obj, event_num = False, var_names: tuple = ("purity", "com
           
     else:
         raise RuntimeError("Variable names are invalid and/or each variable does not have a requirement")
+
+
+def rotate_pfo_2d(event, n, v="w"):
+    """Returns the hits in the vth view, rotated by an angle theta such
+    that the transformed x-axis is strictly the direction of travel for the particle
+    in that view.
+    """
+    if v.lower() == "w":
+        vtx = np.array([
+            event.reco_particle_vtx_x[n], event.reco_particle_vtx_w[n]
+        ])
+        X = np.concatenate((vtx.reshape(1,2),np.vstack((event.reco_hits_x_w[n], event.reco_hits_w[n])).T), axis=0) - vtx
+        
+    elif v.lower() == "u":
+        vtx = np.array([
+            event.reco_particle_vtx_x[n], event.reco_particle_vtx_u[n]
+        ])
+        X = np.concatenate((vtx.reshape(1,2),np.vstack((event.reco_hits_x_u[n], event.reco_hits_u[n])).T), axis=0) - vtx
+        
+    elif v.lower() == "v":
+        vtx = np.array([
+            event.reco_particle_vtx_x[n], event.reco_particle_vtx_v[n]
+        ])
+        X = np.concatenate((vtx.reshape(1,2),np.vstack((event.reco_hits_x_v[n], event.reco_hits_v[n])).T), axis=0) - vtx
     
+    else:
+        raise ValueError(
+        "expected v to be in [u,v,w]"
+        )
+        
+    xbar = np.mean(X, axis=0)
+    xhat = xbar/np.linalg.norm(xbar)
+    theta = -np.arctan2(xhat[1], xhat[0])
+
+    R = np.array([
+        [np.cos(theta), -np.sin(theta)],
+        [np.sin(theta), np.cos(theta)]
+    ])
+
+    W = R @ X.T
+
+    return W[0], W[1], xhat    
